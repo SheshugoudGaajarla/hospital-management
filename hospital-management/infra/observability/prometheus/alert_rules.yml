@@ -1,0 +1,37 @@
+groups:
+  - name: hospital-api-alerts
+    rules:
+      - alert: HospitalApiHighErrorRate
+        expr: |
+          sum(rate(hospital_http_errors_total[5m]))
+            /
+          clamp_min(sum(rate(hospital_http_requests_total[5m])), 0.001)
+            > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Hospital API high 5xx rate"
+          description: "5xx error ratio exceeded 5% over the last 5 minutes."
+
+      - alert: HospitalApiHighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(hospital_http_request_duration_seconds_bucket[5m]))
+          ) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Hospital API high p95 latency"
+          description: "p95 latency exceeded 1.5 seconds for 10 minutes."
+
+      - alert: HospitalAuthBruteforceSpike
+        expr: sum(increase(hospital_auth_login_failures_total[5m])) > 50
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Auth failure spike detected"
+          description: "More than 50 failed logins in 5 minutes."
