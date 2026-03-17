@@ -35,9 +35,10 @@ services:
     build:
       context: ../../apps/api
     environment:
-      APP_ENV: dev
+      APP_ENV: ${APP_ENV:-dev}
       DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/hospital_dev
       REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
     ports:
       - "8000:8000"
     depends_on:
@@ -47,6 +48,10 @@ services:
   web:
     build:
       context: ../../apps/web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
     ports:
       - "3000:3000"
     depends_on:
